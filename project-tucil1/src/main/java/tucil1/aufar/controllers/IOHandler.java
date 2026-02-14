@@ -1,14 +1,16 @@
 package tucil1.aufar.controllers;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class InputHandler {
+public class IOHandler {
 
     private char[][] board;
     private int N;
@@ -87,5 +89,21 @@ public class InputHandler {
 
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    public boolean writeToFile(String filename, String content) {
+        File outputDir = new File("test");
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+
+        File file = new File(outputDir, filename);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            bw.write(content);
+            return true;
+        } catch (IOException e) {
+            errorMessage = "Gagal menulis file: " + e.getMessage();
+            return false;
+        }
     }
 }
