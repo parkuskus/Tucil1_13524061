@@ -1,21 +1,40 @@
 package tucil1.aufar.controllers;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class InputHandler {
 
     private char[][] board;
     private int N;
+    private String errorMessage = "";
 
-    public void readFile(String filename) throws IOException {
-    List<char[]> tempBoard = new ArrayList<>();
+    public boolean readFile(String filename) {
+        List<char[]> tempBoard = new ArrayList<>();
 
-    try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-        String line;
+        File file = new File(filename) ;
+
+        if (!file.exists()) {
+            file = new File("test/" + filename);
+        }
+
+        // Coba naik satu folder
+        if (!file.exists()) {
+            file = new File("../test/" + filename);
+        }
+
+        if (!file.exists()) {
+            errorMessage = "File tidak ditemukan: " + filename;
+            return false;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
 
             while ((line = br.readLine()) != null) {
                 line = line.trim();
@@ -23,6 +42,15 @@ public class InputHandler {
                     tempBoard.add(line.toCharArray());
                 }
             }
+
+        } catch (IOException e) {
+            errorMessage = "Gagal membaca file: " + e.getMessage();
+            return false;
+        }
+
+        if (tempBoard.isEmpty()) {
+            errorMessage = "File kosong.";
+            return false;
         }
 
         N = tempBoard.size();
@@ -31,17 +59,21 @@ public class InputHandler {
         for (int i = 0; i < N; i++) {
             board[i] = tempBoard.get(i);
         }
+
+        if (!isSquare()) {
+            errorMessage = "Papan tidak berbentuk persegi (N x N).";
+            return false;
+        }
+
+        return true;
     }
 
-    public boolean isSquare() {
-        if (board == null) return false;
-
+    private boolean isSquare() {
         for (int i = 0; i < N; i++) {
             if (board[i].length != N) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -53,14 +85,7 @@ public class InputHandler {
         return N;
     }
 
-    public void printBoard() {
-        if (board == null) {
-            System.out.println("Board kosong.");
-            return;
-        }
-
-        for (int i = 0; i < N; i++) {
-            System.out.println(new String(board[i]));
-        }
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }
