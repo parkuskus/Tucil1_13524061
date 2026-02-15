@@ -1,12 +1,17 @@
 package tucil1.aufar.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BruteForce {    
     int n ; 
     int[] queens ;
+    List<String> solutions;
 
     public BruteForce(int n) {
         this.n = n;
-        this.queens = new int[n]; 
+        this.queens = new int[n];
+        this.solutions = new ArrayList<>();
     }
 
     private boolean nextState(){
@@ -58,23 +63,43 @@ public class BruteForce {
     public String solve(char[][] board){
         long startTime = System.nanoTime();
         long casesChecked = 0;
-        int count = 0;
+        solutions.clear();
         StringBuilder result = new StringBuilder();
         
+        long totalCase = (long) Math.pow(n, n);
+        int[] liveUpdate = {10, 20, 30, 40, 50, 60, 70, 80, 90} ;
+        int update = 0 ;
         do {
             casesChecked++;
+            if (update < liveUpdate.length){
+                if ((casesChecked * 100 / totalCase) > liveUpdate[update] ){
+                    System.out.println("Update Ke-" + (update+1)) ;
+                    String boardState = getSolutionString(board);
+                    System.out.print(boardState);
+                    result.append(boardState).append("\n");
+                    System.out.println() ;
+                    update++;
+                }
+            }
             if (isValid(board)){
                 String solution = getSolutionString(board);
-                System.out.print(solution);
-                result.append(solution).append("\n");
-                count++;
+                solutions.add(solution);
             }
         } while (nextState());
 
         long endTime = System.nanoTime();
         long durationMs = (endTime - startTime) / 1_000_000;
 
-        String stats = "Total solusi: " + count + "\n" +
+        // Cetak semua solusi di akhir
+        System.out.println("\nSOLUSI AKHIR YANG MUNGKIN\n");
+        for (int i = 0; i < solutions.size(); i++) {
+            System.out.println("Solusi " + (i + 1) + ":");
+            System.out.print(solutions.get(i));
+            result.append(solutions.get(i)).append("\n");
+            System.out.println();
+        }
+
+        String stats = "Total solusi: " + solutions.size() + "\n" +
                        "Waktu pencarian: " + durationMs + " ms\n" +
                        "Banyak kasus yang ditinjau: " + casesChecked + " kasus\n";
         
