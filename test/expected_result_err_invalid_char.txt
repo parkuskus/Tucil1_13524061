@@ -1,0 +1,3 @@
+Karakter tidak valid '1' pada baris 1, kolom 3. Hanya alfabet (A-Z, a-z) yang diperbolehkan.
+
+catatan: edge case - karakter non-huruf (angka 1,2,3) dalam grid. Program menolak input dengan karakter selain alfabet.

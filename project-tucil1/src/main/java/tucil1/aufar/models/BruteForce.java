@@ -74,6 +74,7 @@ public class BruteForce {
             if (update < liveUpdate.length){
                 if ((casesChecked * 100 / totalCase) > liveUpdate[update] ){
                     System.out.println("Update Ke-" + (update+1)) ;
+                    result.append("Update Ke-" + (update+1)).append("\n") ;
                     String boardState = getSolutionString(board);
                     System.out.print(boardState);
                     result.append(boardState).append("\n");
@@ -92,8 +93,11 @@ public class BruteForce {
 
         // Cetak semua solusi di akhir
         System.out.println("\nSOLUSI AKHIR YANG MUNGKIN\n");
+        result.append("\nSOLUSI AKHIR YANG MUNGKIN\n") ;
+
         for (int i = 0; i < solutions.size(); i++) {
             System.out.println("Solusi " + (i + 1) + ":");
+            result.append("Solusi " + (i + 1) + ":").append("\n") ;
             System.out.print(solutions.get(i));
             result.append(solutions.get(i)).append("\n");
             System.out.println();

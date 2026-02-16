@@ -1,0 +1,3 @@
+Tidak ada solusi
+
+catatan: edge case - papan 2x2, tidak ada solusi karena semua sel bersebelahan (adjacent constraint)

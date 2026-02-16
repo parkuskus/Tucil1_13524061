@@ -1,0 +1,3 @@
+Papan tidak berbentuk persegi (N x N).
+
+catatan: edge case - 3 baris dengan 4 kolom (tidak N x N)

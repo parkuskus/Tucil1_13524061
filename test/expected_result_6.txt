@@ -1,0 +1,3 @@
+#
+
+catatan: edge case - papan 1x1, solusi tepat satu (queen di satu-satunya sel)

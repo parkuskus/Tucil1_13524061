@@ -1,0 +1,3 @@
+Tidak ada solusi
+
+catatan: edge case - papan 3x3 dengan 9 region berbeda, tidak ada solusi karena adjacent constraint terlalu ketat

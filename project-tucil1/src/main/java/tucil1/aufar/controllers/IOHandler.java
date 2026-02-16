@@ -67,6 +67,10 @@ public class IOHandler {
             return false;
         }
 
+        if (!isAllAlphabet()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -74,6 +78,19 @@ public class IOHandler {
         for (int i = 0; i < N; i++) {
             if (board[i].length != N) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isAllAlphabet() {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                char c = board[i][j];
+                if (!Character.isLetter(c)) {
+                    errorMessage = "Karakter tidak valid '" + c + "' pada baris " + (i+1) + ", kolom " + (j+1) + ". Hanya alfabet (A-Z, a-z) yang diperbolehkan.";
+                    return false;
+                }
             }
         }
         return true;
@@ -92,7 +109,7 @@ public class IOHandler {
     }
 
     public boolean writeToFile(String filename, String content) {
-        File outputDir = new File("test");
+        File outputDir = new File("results");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }

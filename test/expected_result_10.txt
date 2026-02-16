@@ -1,0 +1,7 @@
+#ABBB
+AAB#B
+C#DDD
+CCDD#
+EE#FF
+
+catatan: edge case - papan 5x5 dengan 6 region, ada 9 solusi karena constraint terpenuhi (region > n)

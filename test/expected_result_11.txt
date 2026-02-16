@@ -1,0 +1,7 @@
+AA#AB
+#DDDB
+CDE#B
+C#FFF
+GGGG#
+
+catatan: edge case - region G membentuk baris terakhir penuh, ada 12 solusi karena queen bisa ditempatkan di posisi yang tidak adjacent

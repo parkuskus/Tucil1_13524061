@@ -1,0 +1,3 @@
+Tidak ada solusi
+
+catatan: edge case - semua sel dalam region yang sama, tidak ada solusi karena queens tidak boleh di region yang sama

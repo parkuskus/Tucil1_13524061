@@ -1,0 +1,3 @@
+File tidak ditemukan: file_tidak_ada.txt
+
+catatan: edge case - file tidak ditemukan

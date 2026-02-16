@@ -1,0 +1,8 @@
+A#ABBB
+AAA#BB
+CCCDD#
+#CCDDD
+EE#FFF
+EEE#FF
+
+catatan: solusi dapat lebih dari 1. 

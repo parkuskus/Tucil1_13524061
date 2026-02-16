@@ -46,7 +46,7 @@ public class App {
             String outputFilename = scan.nextLine().trim();
             
             if (ioHandler.writeToFile(outputFilename, result)) {
-                System.out.println("Solusi berhasil disimpan ke test/" + outputFilename);
+                System.out.println("Solusi berhasil disimpan ke results/" + outputFilename);
             } else {
                 System.out.println(ioHandler.getErrorMessage());
             }
