@@ -67,11 +67,7 @@ public class IOHandler {
             return false;
         }
 
-        if (!isAllAlphabet()) {
-            return false;
-        }
-
-        return true;
+        return isAllAlphabet();
     }
 
     private boolean isSquare() {
