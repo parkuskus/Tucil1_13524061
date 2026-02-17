@@ -127,26 +127,25 @@ public class BruteForce {
                     solutionCallback.accept(solution, solutions.size());
                 }
             }
-        } while (nextState());
+        } while (nextState() && solutions.size() < 1);
 
         long endTime = System.nanoTime();
         searchTimeMs = (endTime - startTime) / 1_000_000;
         casesCheckedTotal = casesChecked;
 
         // Cetak semua solusi di akhir
-        System.out.println("\nSOLUSI AKHIR YANG MUNGKIN\n");
-        result.append("\nSOLUSI AKHIR YANG MUNGKIN\n") ;
-
-        for (int i = 0; i < solutions.size(); i++) {
-            System.out.println("Solusi " + (i + 1) + ":");
-            result.append("Solusi ").append(i + 1).append(":").append("\n") ;
-            System.out.print(solutions.get(i));
-            result.append(solutions.get(i)).append("\n");
-            System.out.println();
+        if (solutions.size() < 1){
+            System.out.println("Tidak Ada Solusi!");
+            result.append("Tidak Ada Solusi!") ;
+        } else {
+            System.out.println("\nSOLUSI AKHIR");
+            result.append("\nSOLUSI AKHIR\n") ;
+            System.out.print(solutions.get(0) + "\n");
+            result.append(solutions.get(0)).append("\n");
         }
 
-        String stats = "Total solusi: " + solutions.size() + "\n" +
-                       "Waktu pencarian: " + searchTimeMs + " ms\n" +
+
+        String stats = "Waktu pencarian: " + searchTimeMs + " ms\n" +
                        "Banyak kasus yang ditinjau: " + casesChecked + " kasus\n";
         
         System.out.println(stats);

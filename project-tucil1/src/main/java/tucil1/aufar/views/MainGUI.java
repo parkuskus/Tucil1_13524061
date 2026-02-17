@@ -13,16 +13,21 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.InnerShadow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tucil1.aufar.controllers.IOHandler;
@@ -44,6 +49,11 @@ public class MainGUI extends Application {
     private int boardSize;
     private IOHandler ioHandler;
     private volatile boolean isSolving = false;
+    
+    // Pre-created cell components for stable rendering
+    private StackPane[][] cellPanes;
+    private Circle[][] queenCircles;
+    private int currentCellSize;
 
     @Override
     public void start(Stage primaryStage) {
@@ -51,33 +61,36 @@ public class MainGUI extends Application {
         
         primaryStage.setTitle("Queens Game Solver - Tucil 1");
 
-        // Main layout
+        // Main layout with modern dark theme
         BorderPane mainLayout = new BorderPane();
-        mainLayout.setPadding(new Insets(10));
+        mainLayout.setPadding(new Insets(15));
+        mainLayout.setStyle("-fx-background-color: linear-gradient(to bottom, #2C3E50, #1A252F);");
 
         // Top: Controls
         HBox controlsBox = createControlsBox();
         mainLayout.setTop(controlsBox);
 
         // Center: Board visualization
-        VBox centerBox = new VBox(10);
+        VBox centerBox = new VBox(15);
         centerBox.setAlignment(Pos.CENTER);
         
         Label boardLabel = new Label("Papan Permainan");
-        boardLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        boardLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+        boardLabel.setTextFill(Color.WHITE);
         
         boardGrid = new GridPane();
         boardGrid.setAlignment(Pos.CENTER);
-        boardGrid.setHgap(2);
-        boardGrid.setVgap(2);
-        boardGrid.setPadding(new Insets(10));
-        boardGrid.setStyle("-fx-background-color: #333333; -fx-padding: 5;");
+        boardGrid.setHgap(3);
+        boardGrid.setVgap(3);
+        boardGrid.setPadding(new Insets(15));
+        boardGrid.setStyle("-fx-background-color: #1E272E; -fx-background-radius: 10;");
         
         ScrollPane boardScroll = new ScrollPane(boardGrid);
         boardScroll.setFitToWidth(true);
         boardScroll.setFitToHeight(true);
-        boardScroll.setPrefViewportHeight(400);
-        boardScroll.setPrefViewportWidth(400);
+        boardScroll.setPrefViewportHeight(420);
+        boardScroll.setPrefViewportWidth(420);
+        boardScroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         
         centerBox.getChildren().addAll(boardLabel, boardScroll);
         mainLayout.setCenter(centerBox);
@@ -87,36 +100,42 @@ public class MainGUI extends Application {
         logBox.setPadding(new Insets(10));
         
         Label logLabel = new Label("Log Pencarian");
-        logLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        logLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        logLabel.setTextFill(Color.WHITE);
         
         logArea = new TextArea();
         logArea.setEditable(false);
-        logArea.setPrefWidth(300);
+        logArea.setPrefWidth(320);
         logArea.setPrefHeight(400);
-        logArea.setFont(Font.font("Consolas", 12));
+        logArea.setFont(Font.font("Consolas", 11));
+        logArea.setStyle("-fx-control-inner-background: #1E272E; -fx-text-fill: #ECF0F1; -fx-background-radius: 8;");
         
         logBox.getChildren().addAll(logLabel, logArea);
         mainLayout.setRight(logBox);
 
         // Bottom: Status and stats
-        VBox bottomBox = new VBox(5);
+        VBox bottomBox = new VBox(8);
         bottomBox.setPadding(new Insets(10));
         
         statusLabel = new Label("Status: Menunggu input...");
-        statusLabel.setFont(Font.font("Arial", 12));
+        statusLabel.setFont(Font.font("Segoe UI", 12));
+        statusLabel.setTextFill(Color.web("#BDC3C7"));
         
         statsLabel = new Label("");
-        statsLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        statsLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 13));
+        statsLabel.setTextFill(Color.web("#3498DB"));
         
         // Speed control
         HBox speedBox = new HBox(10);
         speedBox.setAlignment(Pos.CENTER_LEFT);
         Label speedLabel = new Label("Kecepatan Visualisasi:");
+        speedLabel.setTextFill(Color.WHITE);
         speedSlider = new Slider(1, 100, 50);
         speedSlider.setShowTickLabels(true);
         speedSlider.setShowTickMarks(true);
         speedSlider.setPrefWidth(200);
         Label speedValueLabel = new Label("50 ms");
+        speedValueLabel.setTextFill(Color.web("#2ECC71"));
         speedSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             speedValueLabel.setText(newVal.intValue() + " ms");
         });
@@ -215,67 +234,147 @@ public class MainGUI extends Application {
 
     private void displayBoard(char[][] board, int[] queens) {
         Platform.runLater(() -> {
-            boardGrid.getChildren().clear();
-            
-            int cellSize = Math.max(30, Math.min(50, 400 / boardSize));
-            
-            for (int row = 0; row < boardSize; row++) {
-                for (int col = 0; col < boardSize; col++) {
-                    StackPane cell = new StackPane();
-                    cell.setPrefSize(cellSize, cellSize);
-                    
-                    Rectangle rect = new Rectangle(cellSize - 2, cellSize - 2);
-                    Color cellColor = getColorForRegion(board[row][col]);
-                    rect.setFill(cellColor);
-                    rect.setStroke(Color.DARKGRAY);
-                    rect.setStrokeWidth(1);
-                    
-                    cell.getChildren().add(rect);
-                    
-                    // Show queen if present
-                    if (queens != null && queens[col] == row) {
-                        Text queenText = new Text("\u265B"); // Black chess queen
-                        queenText.setFont(Font.font("Segoe UI Symbol", FontWeight.BOLD, cellSize - 8));
-                        queenText.setFill(Color.DARKRED);
-                        cell.getChildren().add(queenText);
-                    }
-                    
-                    boardGrid.add(cell, col, row);
-                }
+            // Only rebuild grid if board size changed or first time
+            if (cellPanes == null || cellPanes.length != boardSize) {
+                initializeBoardGrid(board);
             }
+            
+            // Update queen positions only (no rebuild)
+            updateQueenPositions(queens);
         });
+    }
+    
+    /**
+     * Initialize the board grid once - creates all cells and queen overlays
+     */
+    private void initializeBoardGrid(char[][] board) {
+        boardGrid.getChildren().clear();
+        
+        currentCellSize = Math.max(35, Math.min(55, 450 / boardSize));
+        cellPanes = new StackPane[boardSize][boardSize];
+        queenCircles = new Circle[boardSize][boardSize];
+        
+        // Drop shadow for cells
+        DropShadow cellShadow = new DropShadow();
+        cellShadow.setRadius(3);
+        cellShadow.setOffsetX(1);
+        cellShadow.setOffsetY(1);
+        cellShadow.setColor(Color.color(0, 0, 0, 0.3));
+        
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                StackPane cell = new StackPane();
+                cell.setPrefSize(currentCellSize, currentCellSize);
+                cell.setMinSize(currentCellSize, currentCellSize);
+                cell.setMaxSize(currentCellSize, currentCellSize);
+                
+                // Modern rounded rectangle for cell
+                Rectangle rect = new Rectangle(currentCellSize - 3, currentCellSize - 3);
+                rect.setArcWidth(8);
+                rect.setArcHeight(8);
+                Color cellColor = getColorForRegion(board[row][col]);
+                rect.setFill(cellColor);
+                rect.setStroke(cellColor.darker());
+                rect.setStrokeWidth(1.5);
+                rect.setEffect(cellShadow);
+                
+                cell.getChildren().add(rect);
+                
+                // Pre-create queen circle (hidden by default)
+                Circle queenCircle = createQueenCircle();
+                queenCircle.setVisible(false);
+                cell.getChildren().add(queenCircle);
+                
+                cellPanes[row][col] = cell;
+                queenCircles[row][col] = queenCircle;
+                
+                boardGrid.add(cell, col, row);
+            }
+        }
+    }
+    
+    /**
+     * Create a modern-looking queen piece using shapes
+     */
+    private Circle createQueenCircle() {
+        int queenSize = (int) (currentCellSize * 0.55);
+        
+        // Gradient fill for 3D effect
+        RadialGradient gradient = new RadialGradient(
+            0, 0, 0.3, 0.3, 0.8, true, CycleMethod.NO_CYCLE,
+            new Stop(0, Color.web("#FF6B6B")),
+            new Stop(0.7, Color.web("#C0392B")),
+            new Stop(1, Color.web("#8B0000"))
+        );
+        
+        Circle queen = new Circle(queenSize / 2.0);
+        queen.setFill(gradient);
+        queen.setStroke(Color.web("#2C3E50"));
+        queen.setStrokeWidth(2);
+        
+        // Inner shadow for depth
+        InnerShadow innerShadow = new InnerShadow();
+        innerShadow.setRadius(5);
+        innerShadow.setColor(Color.color(0, 0, 0, 0.4));
+        
+        // Drop shadow
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setRadius(4);
+        dropShadow.setOffsetX(2);
+        dropShadow.setOffsetY(2);
+        dropShadow.setColor(Color.color(0, 0, 0, 0.5));
+        dropShadow.setInput(innerShadow);
+        
+        queen.setEffect(dropShadow);
+        
+        return queen;
+    }
+    
+    /**
+     * Update only queen positions without rebuilding the grid
+     */
+    private void updateQueenPositions(int[] queens) {
+        if (queenCircles == null) return;
+        
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                boolean hasQueen = queens != null && queens[col] == row;
+                queenCircles[row][col].setVisible(hasQueen);
+            }
+        }
     }
 
     private Color getColorForRegion(char region) {
         // Map region characters to colors
         int index = Character.toUpperCase(region) - 'A';
+        // Modern flat design colors with good contrast
         Color[] colors = {
-            Color.CORAL,           // A
-            Color.LIGHTBLUE,       // B
-            Color.LIGHTGREEN,      // C
-            Color.KHAKI,           // D
-            Color.PLUM,            // E
-            Color.LIGHTSALMON,     // F
-            Color.LIGHTCYAN,       // G
-            Color.LAVENDER,        // H
-            Color.PEACHPUFF,       // I
-            Color.PALEGREEN,       // J
-            Color.LIGHTPINK,       // K
-            Color.LIGHTYELLOW,     // L
-            Color.LIGHTGRAY,       // M
-            Color.BISQUE,          // N
-            Color.HONEYDEW,        // O
-            Color.MISTYROSE,       // P
-            Color.AZURE,           // Q
-            Color.LEMONCHIFFON,    // R
-            Color.LAVENDERBLUSH,   // S
-            Color.MINTCREAM,       // T
-            Color.ALICEBLUE,       // U
-            Color.SEASHELL,        // V
-            Color.FLORALWHITE,     // W
-            Color.GHOSTWHITE,      // X
-            Color.OLDLACE,         // Y
-            Color.LINEN            // Z
+            Color.web("#FF6B6B"),  // A - Coral Red
+            Color.web("#74B9FF"),  // B - Light Blue
+            Color.web("#55EFC4"),  // C - Mint Green
+            Color.web("#FFEAA7"),  // D - Light Yellow
+            Color.web("#DDA0DD"),  // E - Plum
+            Color.web("#FAB1A0"),  // F - Peach
+            Color.web("#81ECEC"),  // G - Cyan
+            Color.web("#E8DAEF"),  // H - Lavender
+            Color.web("#FDCB6E"),  // I - Orange Yellow
+            Color.web("#00B894"),  // J - Green
+            Color.web("#FD79A8"),  // K - Pink
+            Color.web("#F8E71C"),  // L - Yellow
+            Color.web("#B2BEC3"),  // M - Gray
+            Color.web("#E17055"),  // N - Orange
+            Color.web("#A29BFE"),  // O - Purple
+            Color.web("#FF7675"),  // P - Red
+            Color.web("#0984E3"),  // Q - Blue
+            Color.web("#F39C12"),  // R - Gold
+            Color.web("#9B59B6"),  // S - Violet
+            Color.web("#1ABC9C"),  // T - Teal
+            Color.web("#3498DB"),  // U - Sky Blue
+            Color.web("#E74C3C"),  // V - Red
+            Color.web("#2ECC71"),  // W - Emerald
+            Color.web("#F1C40F"),  // X - Sunflower
+            Color.web("#9980FA"),  // Y - Light Purple
+            Color.web("#22A6B3")   // Z - Blue Green
         };
         
         if (index >= 0 && index < colors.length) {
@@ -315,7 +414,7 @@ public class MainGUI extends Application {
             // Set callback for found solutions
             bf.setSolutionCallback((solution, solutionNum) -> {
                 Platform.runLater(() -> {
-                    logArea.appendText("=== Solusi " + solutionNum + " ===\n");
+                    logArea.appendText("=== Solusi ===\n");
                     logArea.appendText(solution + "\n");
                 });
             });
@@ -328,12 +427,13 @@ public class MainGUI extends Application {
                 loadTxtButton.setDisable(false);
                 loadImageButton.setDisable(false);
                 statusLabel.setText("Status: Pencarian selesai!");
-                statsLabel.setText("Total solusi: " + bf.getSolutionCount() + 
-                    " | Waktu: " + bf.getSearchTimeMs() + " ms | Kasus ditinjau: " + bf.getCasesChecked());
+                statsLabel.setText("Waktu: " + bf.getSearchTimeMs() + " ms | Kasus ditinjau: " + bf.getCasesChecked());
                 
                 // Display first solution if exists
                 if (bf.getSolutionCount() > 0) {
                     displayBoard(currentBoard, bf.getFirstSolutionQueens());
+                } else {
+                    logArea.appendText("\n=== Tidak Ada Solusi! ===\n");
                 }
             });
         });
@@ -347,6 +447,8 @@ public class MainGUI extends Application {
         logArea.clear();
         currentBoard = null;
         boardSize = 0;
+        cellPanes = null;
+        queenCircles = null;
         solveButton.setDisable(true);
         statusLabel.setText("Status: Menunggu input...");
         statsLabel.setText("");
