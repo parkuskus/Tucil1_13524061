@@ -2,16 +2,41 @@ package tucil1.aufar.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class BruteForce {    
     int n ; 
     int[] queens ;
     List<String> solutions;
+    List<int[]> solutionQueens;
+    
+    // Stats
+    private long searchTimeMs;
+    private long casesCheckedTotal;
+    
+    // Callbacks for GUI visualization
+    private VisualizationCallback visualizationCallback;
+    private BiConsumer<String, Integer> solutionCallback;
+    
+    // Functional interface for visualization callback
+    @FunctionalInterface
+    public interface VisualizationCallback {
+        void onUpdate(int[] queens, long casesChecked, double progress);
+    }
 
     public BruteForce(int n) {
         this.n = n;
         this.queens = new int[n];
         this.solutions = new ArrayList<>();
+        this.solutionQueens = new ArrayList<>();
+    }
+    
+    public void setVisualizationCallback(VisualizationCallback callback) {
+        this.visualizationCallback = callback;
+    }
+    
+    public void setSolutionCallback(BiConsumer<String, Integer> callback) {
+        this.solutionCallback = callback;
     }
 
     private boolean nextState(){
@@ -64,13 +89,23 @@ public class BruteForce {
         long startTime = System.nanoTime();
         long casesChecked = 0;
         solutions.clear();
+        solutionQueens.clear();
         StringBuilder result = new StringBuilder();
         
         long totalCase = (long) Math.pow(n, n);
         int[] liveUpdate = {10, 20, 30, 40, 50, 60, 70, 80, 90} ;
         int update = 0 ;
+        long visualizationInterval = Math.max(1, totalCase / 100); // Update every 1%
+        
         do {
             casesChecked++;
+            
+            // Live visualization callback
+            if (visualizationCallback != null && casesChecked % visualizationInterval == 0) {
+                double progress = (casesChecked * 100.0) / totalCase;
+                visualizationCallback.onUpdate(queens.clone(), casesChecked, progress);
+            }
+            
             if (update < liveUpdate.length){
                 if ((casesChecked * 100 / totalCase) > liveUpdate[update] ){
                     System.out.println("Update Ke-" + (update+1)) ;
@@ -85,11 +120,18 @@ public class BruteForce {
             if (isValid(board)){
                 String solution = getSolutionString(board);
                 solutions.add(solution);
+                solutionQueens.add(queens.clone());
+                
+                // Solution callback for GUI
+                if (solutionCallback != null) {
+                    solutionCallback.accept(solution, solutions.size());
+                }
             }
         } while (nextState());
 
         long endTime = System.nanoTime();
-        long durationMs = (endTime - startTime) / 1_000_000;
+        searchTimeMs = (endTime - startTime) / 1_000_000;
+        casesCheckedTotal = casesChecked;
 
         // Cetak semua solusi di akhir
         System.out.println("\nSOLUSI AKHIR YANG MUNGKIN\n");
@@ -104,13 +146,37 @@ public class BruteForce {
         }
 
         String stats = "Total solusi: " + solutions.size() + "\n" +
-                       "Waktu pencarian: " + durationMs + " ms\n" +
+                       "Waktu pencarian: " + searchTimeMs + " ms\n" +
                        "Banyak kasus yang ditinjau: " + casesChecked + " kasus\n";
         
         System.out.println(stats);
         result.append(stats);
         
         return result.toString();
+    }
+    
+    // Getter methods for GUI
+    public int getSolutionCount() {
+        return solutions.size();
+    }
+    
+    public long getSearchTimeMs() {
+        return searchTimeMs;
+    }
+    
+    public long getCasesChecked() {
+        return casesCheckedTotal;
+    }
+    
+    public int[] getFirstSolutionQueens() {
+        if (solutionQueens.isEmpty()) {
+            return null;
+        }
+        return solutionQueens.get(0);
+    }
+    
+    public List<int[]> getAllSolutionQueens() {
+        return solutionQueens;
     }
 
 }

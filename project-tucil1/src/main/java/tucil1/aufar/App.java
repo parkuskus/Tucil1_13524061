@@ -4,13 +4,35 @@ import java.util.Scanner;
 
 import tucil1.aufar.controllers.IOHandler;
 import tucil1.aufar.models.BruteForce;
+import tucil1.aufar.views.MainGUI;
 
 public class App {
     public static void main(String[] args) {
+        // Check for GUI mode
+        if (args.length > 0 && (args[0].equals("--gui") || args[0].equals("-g"))) {
+            MainGUI.main(args);
+            return;
+        }
+        
+        // CLI mode
         IOHandler ioHandler = new IOHandler();
         Scanner scan = new Scanner(System.in);
 
-        System.out.print("Masukkan nama file test case (.txt): ");
+        System.out.println("=== Queens Game Solver ===");
+        System.out.println("Pilih mode:");
+        System.out.println("1. CLI (Command Line)");
+        System.out.println("2. GUI (Graphical Interface)");
+        System.out.print("Pilihan (1/2): ");
+        
+        String modeChoice = scan.nextLine().trim();
+        
+        if (modeChoice.equals("2")) {
+            scan.close();
+            MainGUI.main(args);
+            return;
+        }
+
+        System.out.print("\nMasukkan nama file test case (.txt): ");
         String filename = scan.nextLine();
 
         if (!ioHandler.readFile(filename)) {
