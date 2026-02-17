@@ -3,8 +3,6 @@ package tucil1.aufar.views;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,7 +13,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelReader;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -26,6 +23,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import tucil1.aufar.models.ColorRegionExtractor;
 
 /**
  * Dialog for configuring image-based board input.
@@ -414,8 +412,6 @@ public class ImageConfigDialog extends Stage {
     }
     
     private void extractBoard() {
-        PixelReader reader = image.getPixelReader();
-        
         // Calculate actual image coordinates (accounting for scaling)
         double scaleX = image.getWidth() / imageView.getFitWidth();
         double scaleY = image.getHeight() / imageView.getFitHeight();
@@ -425,163 +421,11 @@ public class ImageConfigDialog extends Stage {
         int actualGridW = (int) (gridWidth * scaleX);
         int actualGridH = (int) (gridHeight * scaleY);
         
-        int cellW = actualGridW / boardSize;
-        int cellH = actualGridH / boardSize;
-        
-        resultBoard = new char[boardSize][boardSize];
-        List<double[]> knownColors = new ArrayList<>();  // Store HSB values
-        char nextRegion = 'A';
-        
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
-                // Multi-point sampling for robustness
-                Color cellColor = sampleCellColor(reader, 
-                    actualGridX + col * cellW, actualGridY + row * cellH, 
-                    cellW, cellH, (int) image.getWidth(), (int) image.getHeight());
-                
-                // Convert to HSB for better color matching
-                double[] hsb = colorToHSB(cellColor);
-                
-                // Find matching region or create new one
-                int matchedRegion = findMatchingColor(knownColors, hsb);
-                
-                if (matchedRegion == -1) {
-                    // New color region
-                    knownColors.add(hsb);
-                    resultBoard[row][col] = nextRegion++;
-                } else {
-                    resultBoard[row][col] = (char) ('A' + matchedRegion);
-                }
-            }
-        }
-        
-        regionCount = knownColors.size();
-    }
-    
-    /**
-     * Sample color from multiple points in a cell and return dominant color
-     */
-    private Color sampleCellColor(PixelReader reader, int cellX, int cellY, 
-                                   int cellW, int cellH, int imgW, int imgH) {
-        // Sample 5 points: center and 4 around it
-        int[][] offsets = {
-            {cellW / 2, cellH / 2},         // center
-            {cellW / 3, cellH / 3},         // top-left area
-            {2 * cellW / 3, cellH / 3},     // top-right area
-            {cellW / 3, 2 * cellH / 3},     // bottom-left area
-            {2 * cellW / 3, 2 * cellH / 3}  // bottom-right area
-        };
-        
-        double totalR = 0, totalG = 0, totalB = 0;
-        int count = 0;
-        
-        for (int[] offset : offsets) {
-            int x = Math.min(cellX + offset[0], imgW - 1);
-            int y = Math.min(cellY + offset[1], imgH - 1);
-            x = Math.max(0, x);
-            y = Math.max(0, y);
-            
-            Color c = reader.getColor(x, y);
-            totalR += c.getRed();
-            totalG += c.getGreen();
-            totalB += c.getBlue();
-            count++;
-        }
-        
-        return Color.color(totalR / count, totalG / count, totalB / count);
-    }
-    
-    /**
-     * Convert Color to HSB array [hue, saturation, brightness]
-     */
-    private double[] colorToHSB(Color color) {
-        double r = color.getRed();
-        double g = color.getGreen();
-        double b = color.getBlue();
-        
-        double max = Math.max(r, Math.max(g, b));
-        double min = Math.min(r, Math.min(g, b));
-        double delta = max - min;
-        
-        double hue = 0;
-        double saturation = (max == 0) ? 0 : delta / max;
-        double brightness = max;
-        
-        if (delta != 0) {
-            if (max == r) {
-                hue = 60 * (((g - b) / delta) % 6);
-            } else if (max == g) {
-                hue = 60 * (((b - r) / delta) + 2);
-            } else {
-                hue = 60 * (((r - g) / delta) + 4);
-            }
-        }
-        if (hue < 0) hue += 360;
-        
-        return new double[]{hue, saturation, brightness};
-    }
-    
-    /**
-     * Find a matching color in the known colors list using HSB distance
-     * Returns index if found, -1 if no match
-     */
-    private int findMatchingColor(List<double[]> knownColors, double[] hsb) {
-        // Base thresholds
-        double satThreshold = 0.20;      // Saturation difference (0-1)
-        double brightThreshold = 0.18;   // Brightness difference (0-1)
-        
-        for (int i = 0; i < knownColors.size(); i++) {
-            double[] known = knownColors.get(i);
-            
-            // Calculate hue distance (circular)
-            double hueDiff = Math.abs(hsb[0] - known[0]);
-            if (hueDiff > 180) hueDiff = 360 - hueDiff;
-            
-            double satDiff = Math.abs(hsb[1] - known[1]);
-            double brightDiff = Math.abs(hsb[2] - known[2]);
-            
-            // Dynamic hue threshold based on color range
-            // Red-Orange-Yellow (0-60°) needs tighter threshold
-            double hueThreshold = getHueThreshold(hsb[0], known[0]);
-            
-            // For low saturation (grayish) colors, rely more on brightness
-            if (hsb[1] < 0.15 && known[1] < 0.15) {
-                // Both are grayish - compare brightness only
-                if (brightDiff < 0.12) {
-                    return i;
-                }
-            } else if (hueDiff < hueThreshold && satDiff < satThreshold && brightDiff < brightThreshold) {
-                return i;
-            }
-        }
-        
-        return -1;
-    }
-    
-    /**
-     * Get dynamic hue threshold based on color range
-     * Red-Orange-Yellow range needs tighter threshold to distinguish similar colors
-     */
-    private double getHueThreshold(double hue1, double hue2) {
-        // Check if both colors are in the critical red-orange-yellow range (0-60° or 330-360°)
-        boolean inCriticalRange1 = (hue1 >= 0 && hue1 <= 60) || (hue1 >= 330 && hue1 <= 360);
-        boolean inCriticalRange2 = (hue2 >= 0 && hue2 <= 60) || (hue2 >= 330 && hue2 <= 360);
-        
-        if (inCriticalRange1 && inCriticalRange2) {
-            // Both in red-orange-yellow range - use tight threshold
-            return 12;
-        }
-        
-        // Check green-cyan range (90-180°) - also needs some precision
-        boolean inGreenRange1 = (hue1 >= 90 && hue1 <= 180);
-        boolean inGreenRange2 = (hue2 >= 90 && hue2 <= 180);
-        
-        if (inGreenRange1 && inGreenRange2) {
-            return 15;
-        }
-        
-        // Default threshold for other color ranges
-        return 20;
+        // Use ColorRegionExtractor model for board extraction
+        ColorRegionExtractor extractor = new ColorRegionExtractor();
+        resultBoard = extractor.extractBoard(image, actualGridX, actualGridY, 
+                                              actualGridW, actualGridH, boardSize);
+        regionCount = extractor.getRegionCount();
     }
     
     /**
