@@ -134,22 +134,25 @@ public class MainGUI extends Application {
         HBox controlsBox = new HBox(15);
         controlsBox.setPadding(new Insets(10));
         controlsBox.setAlignment(Pos.CENTER);
+        
+        // Style dengan font yang mendukung emoji (Segoe UI Emoji untuk Windows)
+        String buttonStyle = "-fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; -fx-font-size: 14px; -fx-padding: 10 20;";
 
-        loadTxtButton = new Button("📂 Load TXT File");
-        loadTxtButton.setStyle("-fx-font-size: 14px; -fx-padding: 10 20;");
+        loadTxtButton = new Button("\uD83D\uDCC2 Load TXT File");
+        loadTxtButton.setStyle(buttonStyle);
         loadTxtButton.setOnAction(e -> loadTxtFile());
 
-        loadImageButton = new Button("🖼️ Load Image");
-        loadImageButton.setStyle("-fx-font-size: 14px; -fx-padding: 10 20;");
+        loadImageButton = new Button("\uD83D\uDDBC Load Image");
+        loadImageButton.setStyle(buttonStyle);
         loadImageButton.setOnAction(e -> loadImageFile());
 
-        solveButton = new Button("▶️ Solve");
-        solveButton.setStyle("-fx-font-size: 14px; -fx-padding: 10 20; -fx-background-color: #4CAF50; -fx-text-fill: white;");
+        solveButton = new Button("\u25B6 Solve");
+        solveButton.setStyle(buttonStyle + "-fx-background-color: #4CAF50; -fx-text-fill: white;");
         solveButton.setDisable(true);
         solveButton.setOnAction(e -> startSolving());
 
-        Button clearButton = new Button("🗑️ Clear");
-        clearButton.setStyle("-fx-font-size: 14px; -fx-padding: 10 20;");
+        Button clearButton = new Button("\uD83D\uDDD1 Clear");
+        clearButton.setStyle(buttonStyle);
         clearButton.setOnAction(e -> clearBoard());
 
         controlsBox.getChildren().addAll(loadTxtButton, loadImageButton, solveButton, clearButton);
@@ -231,9 +234,9 @@ public class MainGUI extends Application {
                     
                     // Show queen if present
                     if (queens != null && queens[col] == row) {
-                        Text queenText = new Text("♛");
-                        queenText.setFont(Font.font("Arial", FontWeight.BOLD, cellSize - 10));
-                        queenText.setFill(Color.BLACK);
+                        Text queenText = new Text("\u265B"); // Black chess queen
+                        queenText.setFont(Font.font("Segoe UI Symbol", FontWeight.BOLD, cellSize - 8));
+                        queenText.setFill(Color.DARKRED);
                         cell.getChildren().add(queenText);
                     }
                     
