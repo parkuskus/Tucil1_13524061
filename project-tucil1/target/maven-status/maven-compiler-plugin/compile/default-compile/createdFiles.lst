@@ -1,6 +1,7 @@
-tucil1\aufar\models\BruteForce$VisualizationCallback.class
 tucil1\aufar\models\BruteForce.class
 tucil1\aufar\views\MainGUI.class
 tucil1\aufar\App.class
-tucil1\aufar\controllers\IOHandler.class
 tucil1\aufar\controllers\ImageProcessor.class
+tucil1\aufar\views\ImageConfigDialog.class
+tucil1\aufar\models\BruteForce$VisualizationCallback.class
+tucil1\aufar\controllers\IOHandler.class

@@ -31,7 +31,6 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tucil1.aufar.controllers.IOHandler;
-import tucil1.aufar.controllers.ImageProcessor;
 import tucil1.aufar.models.BruteForce;
 
 public class MainGUI extends Application {
@@ -217,15 +216,21 @@ public class MainGUI extends Application {
         File file = fileChooser.showOpenDialog(null);
         if (file != null) {
             try {
-                ImageProcessor processor = new ImageProcessor();
-                currentBoard = processor.processImage(file);
-                boardSize = currentBoard.length;
-                displayBoard(currentBoard, null);
-                statusLabel.setText("Status: Papan berhasil dimuat dari gambar " + file.getName());
-                logArea.appendText("Loaded image: " + file.getName() + "\n");
-                logArea.appendText("Detected board size: " + boardSize + "x" + boardSize + "\n");
-                logArea.appendText("Detected regions: " + processor.getRegionCount() + "\n\n");
-                solveButton.setDisable(false);
+                // Open configuration dialog for manual grid adjustment
+                ImageConfigDialog configDialog = new ImageConfigDialog(file);
+                configDialog.showAndWait();
+                
+                // Get result from dialog
+                currentBoard = configDialog.getResultBoard();
+                if (currentBoard != null) {
+                    boardSize = currentBoard.length;
+                    displayBoard(currentBoard, null);
+                    statusLabel.setText("Status: Papan berhasil dimuat dari gambar " + file.getName());
+                    logArea.appendText("Loaded image: " + file.getName() + "\n");
+                    logArea.appendText("Board size: " + boardSize + "x" + boardSize + "\n");
+                    logArea.appendText("Detected regions: " + configDialog.getRegionCount() + "\n\n");
+                    solveButton.setDisable(false);
+                }
             } catch (Exception e) {
                 showAlert("Error", "Gagal memproses gambar: " + e.getMessage());
             }
