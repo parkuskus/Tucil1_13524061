@@ -55,6 +55,12 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>17.0.8</version>
+        </dependency>
         <!-- Optionally: parameterized tests support -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

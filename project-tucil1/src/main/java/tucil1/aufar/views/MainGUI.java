@@ -1,12 +1,19 @@
 package tucil1.aufar.views;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,6 +22,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.InnerShadow;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -173,8 +181,78 @@ public class MainGUI extends Application {
         clearButton.setStyle(buttonStyle);
         clearButton.setOnAction(e -> clearBoard());
 
-        controlsBox.getChildren().addAll(loadTxtButton, loadImageButton, solveButton, clearButton);
+        Button saveTxtButton = new Button("\uD83D\uDCBE Save Log");
+        saveTxtButton.setStyle(buttonStyle + "-fx-background-color: #3498DB; -fx-text-fill: white;");
+        saveTxtButton.setOnAction(e -> saveTxtFile());
+
+        Button saveImageButton = new Button("\uD83D\uDDBC Save Image");
+        saveImageButton.setStyle(buttonStyle + "-fx-background-color: #9B59B6; -fx-text-fill: white;");
+        saveImageButton.setOnAction(e -> saveImageFile());
+
+        controlsBox.getChildren().addAll(loadTxtButton, loadImageButton, solveButton, clearButton, saveTxtButton, saveImageButton);
         return controlsBox;
+    }
+
+    private void saveTxtFile() {
+        String logContent = logArea.getText();
+        if (logContent == null || logContent.trim().isEmpty()) {
+            showAlert("Error", "Log kosong! Jalankan solver terlebih dahulu.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Simpan Log Hasil");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Text Files", "*.txt")
+        );
+        fileChooser.setInitialFileName("hasil_" + boardSize + "x" + boardSize + ".txt");
+
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(logContent);
+                statusLabel.setText("Status: Log disimpan ke " + file.getName());
+                logArea.appendText("\nLog saved to: " + file.getName() + "\n");
+            } catch (IOException e) {
+                showAlert("Error", "Gagal menyimpan file: " + e.getMessage());
+            }
+        }
+    }
+
+    private void saveImageFile() {
+        if (currentBoard == null || boardGrid.getChildren().isEmpty()) {
+            showAlert("Error", "Tidak ada papan untuk disimpan!");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Simpan sebagai Gambar");
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("PNG Image", "*.png"),
+            new FileChooser.ExtensionFilter("JPEG Image", "*.jpg", "*.jpeg")
+        );
+        fileChooser.setInitialFileName("board_" + boardSize + "x" + boardSize + ".png");
+
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try {
+                // Take snapshot of the board grid
+                SnapshotParameters params = new SnapshotParameters();
+                params.setFill(Color.web("#1E272E"));
+                WritableImage snapshot = boardGrid.snapshot(params, null);
+                
+                // Convert to BufferedImage and save
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(snapshot, null);
+                
+                String format = file.getName().toLowerCase().endsWith(".png") ? "png" : "jpg";
+                ImageIO.write(bufferedImage, format, file);
+                
+                statusLabel.setText("Status: Gambar disimpan ke " + file.getName());
+                logArea.appendText("Image saved to: " + file.getName() + "\n");
+            } catch (IOException e) {
+                showAlert("Error", "Gagal menyimpan gambar: " + e.getMessage());
+            }
+        }
     }
 
     private void loadTxtFile() {
