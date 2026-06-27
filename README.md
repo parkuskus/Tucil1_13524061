@@ -1,5 +1,7 @@
 # Queens Game Solver
 
+![GUI Preview](cover.png)
+
 Program solver for the **Queens Game** puzzle from LinkedIn, built in **Java** using a **Brute Force** algorithm approach.
 
 ## Program Description
@@ -22,9 +24,6 @@ This program solves the puzzle using a brute force algorithm with O(N^N) complex
   - Export solution to TXT or image (PNG/JPG)
   - Automatic color detection from images using HSB color space
 
-## GUI Preview
-
-![GUI Preview](cover.png)
 
 ## Requirements
 
