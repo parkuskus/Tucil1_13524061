@@ -1,98 +1,104 @@
 # Queens Game Solver
 
-Program solver untuk permainan **Queens Game** dari LinkedIn, dibuat menggunakan bahasa Java dengan pendekatan algoritma **Brute Force**.
+Program solver for the **Queens Game** puzzle from LinkedIn, built in **Java** using a **Brute Force** algorithm approach.
 
-## Deskripsi Program
+## Program Description
 
-Queens Game adalah permainan puzzle di mana pemain harus menempatkan ratu (queen) pada papan berukuran N×N dengan aturan:
-- Setiap baris harus memiliki tepat satu ratu
-- Setiap kolom harus memiliki tepat satu ratu  
-- Setiap region (area berwarna) harus memiliki tepat satu ratu
-- Ratu tidak boleh bersebelahan (termasuk diagonal)
+Queens Game is a puzzle where the player must place queens on an N×N board following these rules:
 
-Program ini menyelesaikan puzzle tersebut menggunakan algoritma brute force dengan kompleksitas O(N^N), dan menyediakan visualisasi langsung proses pencarian solusi.
+- Each row must contain exactly one queen
+- Each column must contain exactly one queen
+- Each region (colored area) must contain exactly one queen
+- Queens must not be adjacent to each other (including diagonally)
 
-### Fitur
-- **Mode CLI**: Input dari file teks, output ke terminal
-- **Mode GUI**: Antarmuka grafis dengan JavaFX
-  - Input dari file TXT atau gambar (screenshot)
-  - Visualisasi live proses brute force
-  - Ekspor solusi ke TXT atau gambar (PNG/JPG)
-  - Deteksi warna otomatis dari gambar menggunakan HSB color space
+This program solves the puzzle using a brute force algorithm with O(N^N) complexity, and provides a live visualization of the search process.
+
+### Features
+
+- **CLI Mode**: Input from text file, output to terminal
+- **GUI Mode**: Graphical interface built with JavaFX
+  - Input from TXT file or image (screenshot)
+  - Live visualization of the brute force process
+  - Export solution to TXT or image (PNG/JPG)
+  - Automatic color detection from images using HSB color space
+
+## GUI Preview
+
+![GUI Preview](cover.png)
 
 ## Requirements
 
-| Komponen | Versi |
-|----------|-------|
-| Java JDK | 17+ |
-| Apache Maven | 3.6+ |
-| JavaFX | 17.0.8 (otomatis via Maven) |
+| Component    | Version            |
+|--------------|--------------------|
+| Java JDK     | 17+                |
+| Apache Maven | 3.6+               |
+| JavaFX       | 17.0.8 (via Maven) |
 
-## Instalasi
+## Installation
 
-1. Clone repository:
+1. Clone the repository:
    ```bash
    git clone https://github.com/username/tucil1-queens-game-simulation.git
    cd tucil1-queens-game-simulation
    ```
 
-2. Pastikan Java 17+ terinstall:
+2. Verify Java 17+ is installed:
    ```bash
    java -version
    ```
 
-3. Pastikan Maven terinstall:
+3. Verify Maven is installed:
    ```bash
    mvn -version
    ```
 
-## Kompilasi
+## Build
 
-Masuk ke direktori project dan compile:
+Navigate to the project directory and compile:
 
 ```bash
 cd project-tucil1
 mvn clean compile
 ```
 
-## Cara Menjalankan
+## Running the Program
 
-### Mode Interaktif (CLI/GUI Selection)
+### Interactive Mode (CLI/GUI Selection)
+
 ```bash
 cd project-tucil1
 mvn exec:java
 ```
-Program akan menampilkan menu untuk memilih mode CLI atau GUI.
 
-### Langsung ke GUI Mode
-```bash
-mvn exec:java -Dexec.args="--gui"
-```
+The program will display a menu to select between CLI and GUI mode.
 
-### Mode CLI
-1. Pilih opsi 1 (CLI) saat menu muncul
-2. Masukkan path file test case (contoh: `../test/test1.txt`)
-3. Program akan menampilkan solusi
-4. Pilih untuk menyimpan hasil ke file jika diinginkan
+### CLI Mode
 
-### Mode GUI
-1. Pilih opsi 2 (GUI) atau jalankan dengan `--gui`
-2. Klik "Load TXT" untuk input dari file teks, atau "Load Image" untuk input dari screenshot
-3. Untuk input gambar, atur grid overlay agar sesuai dengan papan
-4. Klik "Solve" untuk menjalankan solver
-5. Gunakan "Save TXT" atau "Save Image" untuk menyimpan hasil
+1. Select option 1 (CLI) from the menu
+2. Enter the path to the test case file (e.g. `../test/test1.txt`)
+3. The program will display the solution
+4. Choose whether to save the result to a file
 
-## Format Input File TXT
+### GUI Mode
+
+1. Select option 2 (GUI) or launch with `--gui`
+2. Click **Load TXT** to input from a text file, or **Load Image** to input from a screenshot
+3. For image input, adjust the grid overlay to match the board
+4. Click **Solve** to run the solver
+5. Use **Save TXT** or **Save Image** to export the result
+
+## Input File Format (TXT)
 
 ```
-<ukuran_papan>
-<baris_1>
-<baris_2>
+<board_size>
+<row_1>
+<row_2>
 ...
-<baris_n>
+<row_n>
 ```
 
-**Contoh (5×5):**
+**Example (5x5):**
+
 ```
 5
 AAABB
@@ -102,30 +108,30 @@ DDDEE
 DDDEE
 ```
 
-Setiap huruf merepresentasikan region berbeda.
+Each letter represents a different region.
 
-## Struktur Project
+## Project Structure
 
 ```
 project-tucil1/
 ├── src/main/java/tucil1/aufar/
-│   ├── App.java                 # Entry point
+│   ├── App.java                       # Entry point
 │   ├── controllers/
-│   │   └── IOHandler.java       # File I/O handling
+│   │   └── IOHandler.java             # File I/O handling
 │   ├── models/
-│   │   ├── BruteForce.java      # Algoritma solver
-│   │   └── ColorRegionExtractor.java  # Ekstraksi region dari gambar
+│   │   ├── BruteForce.java            # Solver algorithm
+│   │   └── ColorRegionExtractor.java  # Region extraction from image
 │   └── views/
-│       ├── MainGUI.java         # GUI utama
-│       └── ImageConfigDialog.java  # Dialog konfigurasi gambar
+│       ├── MainGUI.java               # Main GUI
+│       └── ImageConfigDialog.java     # Image configuration dialog
 └── pom.xml
 ```
 
 ## Author
 
-| Nama | NIM |
-|------|-----|
-| Muhammad Aufar Rizqi Kusuma | 13524061 |
+| Name                        | Student ID |
+|-----------------------------|------------|
+| Muhammad Aufar Rizqi Kusuma | 13524061   |
 
-**Institut Teknologi Bandung - Informatika**  
-Tugas Kecil 1 - IF2211 Strategi Algoritma
+**Institut Teknologi Bandung - Informatics**
+Tugas Kecil 1 - IF2211 Algorithm Strategies
